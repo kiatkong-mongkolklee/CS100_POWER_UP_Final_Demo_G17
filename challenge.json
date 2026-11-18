@@ -1,20 +1,18 @@
 {
-    "id": "challenge.reward",
-    "title": "The Secret POST Test",
-    "type": "Quiz",
-    "date": "2026-11-24",
-    "role": "Participant",
-    "description": "ได้ทำเเบบสอบถามเกี่ยวกับ POST (HTML Form vs fetch())",
-    "skills": [
+      "id": "challenge.reward",
+      "title": "The Secret POST Test",
+      "type": "Quiz",
+      "date": "2026-11-24",
+      "role": "Participant",
+      "description": "ได้ทำเเบบสอบถามเกี่ยวกับ POST (HTML Form vs fetch())",
+      "skills": [
         " POST (HTML Form vs fetch())"
-    ],
-    "reflection": {
-        "whatIDid": "ทำแบบทดสอบเปรียบเทียบการส่งข้อมูลแบบ HTML Form กับ JavaScript fetch()",
-        "whatILearned": "เข้าใจความแตกต่างและวิธีใช้งาน HTTP POST method ในแต่ละรูปแบบ",
-        "challenge": "การแยกแยะพฤติกรรมการโหลดหน้าเว็บใหม่ของ Form เทียบกับ fetch()",
-        "nextStep": "นำไปประยุกต์ใช้เชื่อมต่อหน้าเว็บกับ Backend Server"
-    },
-    "evidence": [
+      ],
+      "reflection": {
+        
+
+      },
+      "evidence": [
         "https://github.com/kiatkong-mongkolklee/CS100_POWER_UP_Final_Demo_G17.git"
-    ]
-}
+      ]
+    }
