@@ -1,0 +1,166 @@
+
+const stages = [
+  {
+    title: 'ข้อ 1: ส่งฟอร์ม HTML ธรรมดา แล้วหน้าเว็บเป็นยังไง?',
+    options: [
+      'หน้าเปลี่ยนทั้งหน้า และ URL เปลี่ยน',
+      'อยู่หน้าเดิม URL ไม่เปลี่ยน',
+      'ไม่มีอะไรเกิดขึ้น'
+    ],
+    answer: 0,
+    hint: '💡 การส่งฟอร์ม HTML ธรรมดาจะทำให้เบราว์เซอร์เปลี่ยนไปแสดงหน้าที่เซิร์ฟเวอร์ตอบกลับ',
+    praise: 'ถูกต้อง! ผ่านข้อแรกแล้ว 🎉'
+  },
+  {
+    title: 'ข้อ 2: ถ้าส่งข้อมูลด้วย fetch() หน้าเว็บจะเป็นยังไง?',
+    options: [
+      'หน้าเปลี่ยนทั้งหน้า',
+      'อยู่หน้าเดิม ไม่ต้องโหลดใหม่',
+      'เบราว์เซอร์ปิดตัวเอง'
+    ],
+    answer: 1,
+    hint: '💡 fetch() ส่งข้อมูลเบื้องหลังได้ โดยไม่ต้องโหลดหน้าเว็บใหม่',
+    praise: 'เก่งมาก! เข้าใจ fetch() แล้ว'
+  },
+  {
+    title: 'ข้อ 3: ตอนส่งข้อมูลไปหาเซิร์ฟเวอร์ ใครเป็นคนส่งจริง ๆ?',
+    options: [
+      'ตัวฟอร์ม HTML',
+      'เบราว์เซอร์',
+      'ไฟล์ PHP'
+    ],
+    answer: 1,
+    hint: '💡 เบราว์เซอร์เป็นผู้ส่ง HTTP Request ไปยังเซิร์ฟเวอร์',
+    praise: 'ใช่เลย! ตอบถูกอีกข้อแล้ว'
+  },
+  {
+    title: 'ข้อ 4: อยากให้ข้อความบนหน้าเว็บเปลี่ยนโดยไม่ให้หน้ากระพริบ ควรใช้วิธีไหน?',
+    options: [
+      'กดรีเฟรชหน้าเอง',
+      'ฟอร์ม HTML ธรรมดา',
+      'JavaScript fetch()'
+    ],
+    answer: 2,
+    hint: '💡 fetch() รับข้อมูล แล้ว JavaScript สามารถนำไปอัปเดตข้อความโดยไม่ต้องโหลดหน้าใหม่',
+    praise: 'สุดยอด! ผ่านครบทุกข้อแล้ว 🎉'
+  }
+];
+
+let i = 0;
+let mistakes = 0;
+
+const $ = id => document.getElementById(id);
+
+function say(message) {
+  $('bubble').textContent = message;
+}
+
+function render() {
+  const progress = Math.round(i / stages.length * 100);
+
+  $('fill').style.width = progress + '%';
+  $('pct').textContent = progress + '%';
+
+  if (i >= stages.length) {
+    finish();
+    return;
+  }
+
+  const s = stages[i];
+
+  let html = `
+    <h3>${s.title}</h3>
+
+    <div class="chips">
+      ${s.options.map((option, k) => `
+        <button class="opt" data-k="${k}">
+          ${option}
+        </button>
+      `).join('')}
+    </div>
+
+    <p class="hint" id="hint"></p>
+
+    <button class="btn btn-primary" id="next" disabled>
+      ข้อต่อไป
+    </button>
+  `;
+
+  $('card').innerHTML = html;
+
+  $('next').onclick = () => {
+    i++;
+    render();
+  };
+
+  bindChoice(s);
+}
+
+function bindChoice(s) {
+  document.querySelectorAll('.opt').forEach(button => {
+
+    button.onclick = () => {
+
+      if (!$('next').disabled) return;
+
+      if (+button.dataset.k === s.answer) {
+
+        button.classList.add('ok');
+
+        $('hint').textContent = s.hint;
+        $('next').disabled = false;
+
+        say(s.praise);
+
+      } else {
+
+        button.classList.add('bad');
+        mistakes++;
+
+        say('ยังไม่ใช่นะ ลองใหม่อีกครั้ง 🤔');
+
+        setTimeout(() => {
+          button.classList.remove('bad');
+        }, 450);
+
+      }
+    };
+
+  });
+}
+
+function finish() {
+
+  $('fill').style.width = '100%';
+  $('pct').textContent = '100%';
+
+  say(`ผ่านแล้ว! พลาด ${mistakes} ครั้ง 😁`);
+
+  $('card').innerHTML = `
+    <div class="result">
+
+      <div class="tick">✓</div>
+
+      <h2>Verified Human 100%</h2>
+
+      <p>
+        คุณตอบคำถามครบทั้ง 4 ข้อแล้ว
+        (พลาด ${mistakes} ครั้ง)
+      </p>
+
+      <button class="btn btn-primary" id="restart">
+        เล่นอีกรอบ
+      </button>
+
+    </div>
+  `;
+
+  $('restart').onclick = () => {
+    i = 0;
+    mistakes = 0;
+    say('พร้อมเล่นเกมหรือยัง? 😊');
+    render();
+  };
+}
+
+render();
