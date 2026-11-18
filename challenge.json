@@ -1,0 +1,11 @@
+{
+      "id": "challenge.reward",
+      "title": "The Secret POST Test",
+      "type": "Quiz",
+      "date": "2026-11-24",
+      "role": "Participant",
+      "description": "ได้ทำเเบบสอบถามเกี่ยวกับ POST (HTML Form vs fetch())",
+      "skills": [
+        " POST (HTML Form vs fetch())"
+      ],
+    }
