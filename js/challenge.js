@@ -1,11 +1,8 @@
 // js/challenge.js - Challenge Exchange (import / export)
-// Everything is wrapped in one function so our names can't clash with app.js.
 (function () {
   "use strict";
 
-  // ---------- Export ----------
-  // Our group's challenge lives in challenge.json (same folder as index.html).
-  // Edit that file to change what gets exported; nothing is copied into this script.
+  
   async function loadOurChallenge() {
     const response = await fetch("challenge.json", { cache: "no-store" });
     if (!response.ok) {
@@ -94,8 +91,7 @@
   }
 
   // ---------- Display ----------
-  // textContent is used on purpose: the file comes from another group,
-  // so anything in it is shown as plain text and never run as HTML.
+  
   function showChallenge(c) {
     const box = document.querySelector("#challenge-view");
     box.replaceChildren();
@@ -196,6 +192,6 @@
     } else {
       showChallenge(challenge);
     }
-    e.target.value = ""; // lets the same file be imported again
+    e.target.value = ""; 
   });
 })();
