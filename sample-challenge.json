@@ -1,0 +1,17 @@
+{
+  "schemaVersion": "1.0",
+  "id": "G99-C01",
+  "creatorGroup": "G99",
+  "title": "Draw Your Day in Five Icons",
+  "description": "Sum up a normal day using only five simple icons, then explain them to a friend.",
+  "category": "discover",
+  "instructions": [
+    "Take a piece of paper or open any drawing app.",
+    "Draw five simple icons that represent what you did today.",
+    "Show them to a friend and let them guess the story.",
+    "Take a photo or screenshot of your icons."
+  ],
+  "estimatedMinutes": 8,
+  "evidencePrompt": "Which icon was hardest to choose, and what did that teach you about your day?",
+  "tags": ["drawing", "reflection"]
+}
