@@ -1,0 +1,23 @@
+{
+  "name": "cs100-power-up-portfolio",
+  "version": "1.0.0",
+  "description": "Personal Learning Portfolio - frontend + Node.js/Express backend (CS100 POWER UP G17).",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/kiatkong-mongkolklee/CS100_POWER_UP_Final_Demo_G17.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/kiatkong-mongkolklee/CS100_POWER_UP_Final_Demo_G17/issues"
+  },
+  "homepage": "https://github.com/kiatkong-mongkolklee/CS100_POWER_UP_Final_Demo_G17#readme",
+  "dependencies": {
+    "express": "^5.3.0"
+  }
+}

@@ -17,8 +17,8 @@ function toggleOtherType() {
 
 typeSelect.addEventListener("change", toggleOtherType);
 
-// Read one File into a data URL ({ name, dataUrl }) so it can be saved
-// to localStorage and shown later as an <img> or a download link.
+// Read one File into a data URL ({ name, dataUrl }) so it can be sent
+// to the server as JSON and shown later as an <img> or a download link.
 function readFile(file) {
     return new Promise(function (resolve, reject) {
         const reader = new FileReader();
@@ -76,6 +76,7 @@ function showMessage(text, type) {
     const box = document.getElementById("error-toast");
     box.textContent = text;
     box.className = "alert alert-" + type;
+    box.classList.remove("d-none");
     box.scrollIntoView({ behavior: "smooth", block: "center" });
     clearTimeout(toastTimer);
     toastTimer = setTimeout(function () {
@@ -141,7 +142,12 @@ function toList(text) {
     return list;
 }
 
-// Check the whole form. Return true if everything is OK
+// Check the whole form on the CLIENT. This is only for a fast, friendly
+// UI (instant red borders, no round trip). It is NOT the real security
+// boundary - the server (server.js) repeats every one of these checks
+// again before it ever writes to the data file, because anyone can call
+// the API directly (curl, Postman, a browser with JS disabled) and skip
+// this function entirely.
 function validateForm() {
     clearErrors();
     let ok = true;
@@ -216,53 +222,64 @@ form.addEventListener("reset", function () {
     }, 0);
 });
 
-// Make one portfolio item object from the form data
-function makeItem(data, number) {
-    return {
-        id: "item" + String(number).padStart(3, "0"),
-        title: data.title,
-        type: data.type,
-        date: data.date,
-        role: data.role,
-        description: data.description,
-        skills: toList(data.skills),
-        reflection: {
-            whatIDid: data.whatIDid,
-            whatILearned: data.whatILearned,
-            challenge: data.challenge,
-            nextStep: data.nextStep
-        },
-        evidence: toList(data.evidence),
-        photos: data.photos,
-        files: data.files
-    };
+// Map each field name the SERVER's error object can use back to the
+// <input>/<select> it belongs to, so a validation error coming back
+// from the API can be shown as a red border in exactly the same way
+// validateForm() shows one.
+const SERVER_FIELD_TO_INPUT_ID = {
+    displayName: "profile-name",
+    whatIEnjoy: "what-i-enjoy",
+    whatIveTried: "what-ive-tried",
+    whatImCuriousAbout: "what-curious",
+    title: "item-title",
+    type: "item-type",
+    date: "item-date",
+    role: "item-role",
+    description: "item-description",
+    skills: "item-skills",
+    whatIDid: "what-i-did",
+    whatILearned: "what-i-learned",
+    challenge: "challenge",
+    nextStep: "next-step",
+    evidence: "item-evidence",
+    photos: "item-photo",
+    files: "item-file"
+};
+
+// Apply a { fieldName: "message" } object returned by the server onto
+// the matching form inputs.
+function applyServerErrors(errors) {
+    clearErrors();
+    let firstInput = null;
+    for (const fieldName in errors) {
+        const inputId = SERVER_FIELD_TO_INPUT_ID[fieldName];
+        const input = inputId ? document.getElementById(inputId) : null;
+        if (input !== null) {
+            setError(input, errors[fieldName]);
+            if (firstInput === null) {
+                firstInput = input;
+            }
+        }
+    }
+    if (firstInput !== null) {
+        firstInput.focus();
+    }
 }
 
-const STORAGE_KEY = "portfolios";
+// All portfolios the server has sent us, keyed by id ("portfolio_1", ...).
+// This is a client-side CACHE of what is saved on the server - the real
+// data lives in the hidden JSON file the server writes to, not here.
+let portfolios = {};
 
-let portfolios = loadData();
-
-// Read data from localStorage. If there is nothing, return {}
-function loadData() {
-    const text = localStorage.getItem(STORAGE_KEY);
-    if (text === null) {
-        return {};
-    }
+// GET /api/portfolios - load every portfolio from the server.
+async function loadPortfolios() {
     try {
-        return JSON.parse(text);
+        const response = await fetch("/api/portfolios");
+        const result = await response.json();
+        portfolios = result.portfolios || {};
     } catch (error) {
-        return {};
-    }
-}
-
-// Save data to localStorage. Return true if OK, false if storage is full
-function saveData() {
-    try {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(portfolios));
-        return true;
-    } catch (error) {
-        portfolios = loadData();
-        return false;
+        portfolios = {};
+        showMessage("Could not reach the server to load saved portfolios. Showing an empty view.", "danger");
     }
 }
 
@@ -279,31 +296,41 @@ function clearItemFields() {
     toggleOtherType();
 }
 
-// Save the profile and the new item in the selected portfolio
-function saveItem(data) {
+// POST /api/portfolios/:id/items - send the profile + new item to the
+// server with fetch(). The server re-validates everything, saves it to
+// the hidden JSON file, and answers with JSON (never a full page reload,
+// the URL never changes - we just read the JSON and update the page's
+// textContent/innerHTML ourselves).
+async function saveItem(data) {
     const id = createSelect.value;
-    const old = portfolios[id];
 
-    let items = [];
-    if (old !== undefined) {
-        items = old.items;
-    }
-
-    items.push(makeItem(data, items.length + 1));
-
-    portfolios[id] = {
-        id: id,
-        displayName: data.displayName,
-        whatIEnjoy: data.whatIEnjoy,
-        whatIveTried: data.whatIveTried,
-        whatImCuriousAbout: data.whatImCuriousAbout,
-        items: items
-    };
-
-    if (saveData() === false) {
-        showMessage("Could not save: browser storage is full.", "danger");
+    let response;
+    try {
+        response = await fetch("/api/portfolios/" + encodeURIComponent(id) + "/items", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(data)
+        });
+    } catch (error) {
+        showMessage("Could not reach the server. Please check your connection and try again.", "danger");
         return;
     }
+
+    let result;
+    try {
+        result = await response.json();
+    } catch (error) {
+        showMessage("The server sent back an unexpected response.", "danger");
+        return;
+    }
+
+    if (response.ok === false || result.ok === false) {
+        applyServerErrors(result.errors || {});
+        showMessage("Please check the highlighted fields. Nothing was saved.", "danger");
+        return;
+    }
+
+    portfolios[id] = result.portfolio;
 
     clearItemFields();
     renderView();
@@ -446,9 +473,9 @@ viewSelect.addEventListener("change", function () {
 
 form.addEventListener("submit", async function (event) {
     event.preventDefault();
-    
+
     const submitBtn = form.querySelector('button[type="submit"]');
-    submitBtn.disabled = true; 
+    submitBtn.disabled = true;
 
     if (validateForm() === false) {
         showMessage("Please check the highlighted fields. Nothing was saved.", "danger");
@@ -457,10 +484,14 @@ form.addEventListener("submit", async function (event) {
     }
 
     const data = await readForm();
-    saveItem(data);
-    
+    await saveItem(data);
+
     submitBtn.disabled = false;
 });
 
-toggleOtherType();
-selectPortfolio(createSelect.value);
+// Start-up: load whatever is already saved on the server, THEN render.
+(async function init() {
+    toggleOtherType();
+    await loadPortfolios();
+    selectPortfolio(createSelect.value);
+})();
