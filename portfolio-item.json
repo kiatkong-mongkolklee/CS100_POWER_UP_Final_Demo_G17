@@ -1,0 +1,20 @@
+{
+  "schemaVersion": "1.0",
+  "id": "item-g17-001",
+  "title": "Quiz To verified",
+  "type": "Challenge",
+  "date": "2026-11-24",
+  "role": "Participant",
+  "description": "ตอบทำถามเกี่ยวกับ JSON เพื่อทดสอบความเข้าใจ",
+  "skills": ["JSON", "Coding"],
+  "reflection": {
+    "whatIDid": "",
+    "whatILearned": "",
+    "challenge": "",
+    "nextStep": ""
+  },
+  "evidence": ["https://github.com/kiatkong-mongkolklee/CS100_POWER_UP_Final_Demo_G17"],
+  "challengeId": "g17-challenge-1",
+  "hostGroup": "G17",
+  "category": "discover"
+}
