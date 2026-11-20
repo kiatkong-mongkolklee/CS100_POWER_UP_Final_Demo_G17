@@ -13,5 +13,6 @@
   ],
   "estimatedMinutes": 5,
   "evidencePrompt": "คุณพลาดกี่ครั้ง HTML Form กับ fetch() ส่งข้อมูลแบบ POST ต่างกันอย่างไร และคุณเพิ่งรู้อะไรใหม่จากแบบทดสอบนี้",
+  "evidence": ["https://github.com/kiatkong-mongkolklee/CS100_POWER_UP_Final_Demo_G17.git"],
   "tags": ["POST", "fetch", "HTML Form", "quiz"]
 }
