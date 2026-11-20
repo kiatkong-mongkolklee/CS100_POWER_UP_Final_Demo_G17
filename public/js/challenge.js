@@ -4,7 +4,7 @@
 
   
   async function loadOurChallenge() {
-    const response = await fetch("challenge.json", { cache: "no-store" });
+    const response = await fetch("challenge-export.json", { cache: "no-store" });
     if (!response.ok) {
       throw new Error("HTTP " + response.status);
     }

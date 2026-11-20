@@ -1,0 +1,17 @@
+{
+  "schemaVersion": "1.0",
+  "id": "G17-C01",
+  "creatorGroup": "G17",
+  "title": "Verified Human Quiz",
+  "description": "แบบทดสอบสั้น ๆ 4 ข้อ เกี่ยวกับการส่งข้อมูลแบบ POST ว่า HTML Form กับ fetch() ต่างกันอย่างไร",
+  "category": "discover",
+  "instructions": [
+    "เปิดเว็บ Learning Portfolio ของกลุ่ม G17 (ใช้ลิงก์ที่กลุ่ม G17 ให้) แล้วกดเมนู Challenge",
+    "ตอบคำถามทั้ง 4 ข้อเกี่ยวกับการส่งข้อมูลแบบ POST ด้วย HTML Form และ fetch()",
+    "ถ้าตอบผิดให้ลองใหม่จนถูก และอ่านคำอธิบายที่ขึ้นหลังตอบถูกในแต่ละข้อ",
+    "ดูหน้าสรุปผลและจดไว้ว่าพลาดกี่ครั้ง กับข้อไหนที่เพิ่งรู้ใหม่"
+  ],
+  "estimatedMinutes": 5,
+  "evidencePrompt": "คุณพลาดกี่ครั้ง HTML Form กับ fetch() ส่งข้อมูลแบบ POST ต่างกันอย่างไร และคุณเพิ่งรู้อะไรใหม่จากแบบทดสอบนี้",
+  "tags": ["POST", "fetch", "HTML Form", "quiz"]
+}
