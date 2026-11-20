@@ -72,8 +72,7 @@
                             </label>
 
                             <select id="portfolio-select" class="form-select">
-                                <option value="portfolio_1">Portfolio 1</option>
-                                <option value="portfolio_2">Portfolio 2</option>
+                                <option value="" disabled selected>Select Portfolio</option>
                             </select>
 
                         </div>
@@ -330,13 +329,17 @@
 
                             <div class="d-flex gap-2 mt-4">
 
-                                <button type="submit" class="btn btn-primary flex-grow-1">
+                                <button type="button" id="create-portfolio-btn" class="btn btn-primary flex-grow-1">
                                     Create Portfolio
-                                </button>
+                                    </button>
 
-                                <button type="reset" class="btn btn-outline-dark">
-                                    Clear
-                                </button>
+                                    <button type="submit" class="btn btn-success flex-grow-1">
+                                        Add Portfolio Item
+                                    </button>
+
+                                    <button type="reset" class="btn btn-outline-dark">
+                                        Clear
+                                    </button>
 
                             </div>
 
@@ -371,8 +374,7 @@
                             </label>
 
                             <select id="view-portfolio-select" class="form-select">
-                                <option value="portfolio_1">Portfolio 1</option>
-                                <option value="portfolio_2">Portfolio 2</option>
+                                <option value="" disabled selected>Select Portfolio</option>
                             </select>
 
                         </div>
@@ -471,4 +473,3 @@
     <script src="js/challenge.js"></script>
 
 </body>
-

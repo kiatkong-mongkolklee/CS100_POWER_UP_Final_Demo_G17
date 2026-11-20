@@ -148,6 +148,37 @@ function toList(text) {
 // again before it ever writes to the data file, because anyone can call
 // the API directly (curl, Postman, a browser with JS disabled) and skip
 // this function entirely.
+
+// Check only the profile fields when creating a new portfolio
+function validateProfileForm() {
+    clearErrors();
+    let ok = true;
+
+    const required = [
+        ["profile-name", "Please enter a display name."],
+        ["what-i-enjoy", "Please tell us what you enjoy."],
+        ["what-ive-tried", "Please tell us what you've tried."],
+        ["what-curious", "Please tell us what you are curious about."]
+    ];
+
+    for (let i = 0; i < required.length; i++) {
+        const input = document.getElementById(required[i][0]);
+
+        if (input.value.trim() === "") {
+            setError(input, required[i][1]);
+            ok = false;
+        }
+    }
+
+    const firstError = form.querySelector(".is-invalid");
+
+    if (firstError !== null) {
+        firstError.focus();
+    }
+
+    return ok;
+}
+
 function validateForm() {
     clearErrors();
     let ok = true;
@@ -271,16 +302,82 @@ function applyServerErrors(errors) {
 // data lives in the hidden JSON file the server writes to, not here.
 let portfolios = {};
 
+// Generate options for both portfolio dropdowns
+function renderPortfolioDropdowns() {
+    createSelect.innerHTML = '<option value="" disabled selected>Select Portfolio</option>';
+    viewSelect.innerHTML = '<option value="" disabled selected>Select Portfolio</option>';
+
+    Object.keys(portfolios).forEach(id => {
+        const portfolio = portfolios[id];
+
+        const option1 = document.createElement("option");
+        option1.value = id;
+        option1.textContent = portfolio.displayName;
+
+        const option2 = document.createElement("option");
+        option2.value = id;
+        option2.textContent = portfolio.displayName;
+
+        createSelect.appendChild(option1);
+        viewSelect.appendChild(option2);
+    });
+}
+
 // GET /api/portfolios - load every portfolio from the server.
 async function loadPortfolios() {
     try {
         const response = await fetch("/api/portfolios");
         const result = await response.json();
+
         portfolios = result.portfolios || {};
+        renderPortfolioDropdowns();
+
     } catch (error) {
         portfolios = {};
+        renderPortfolioDropdowns();
+
         showMessage("Could not reach the server to load saved portfolios. Showing an empty view.", "danger");
     }
+}
+
+// POST /api/portfolios - create a new portfolio profile
+async function createPortfolio(data) {
+    let response;
+
+    try {
+        response = await fetch("/api/portfolios", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(data)
+        });
+    } catch (error) {
+        showMessage("Could not reach the server. Please check your connection and try again.", "danger");
+        return;
+    }
+
+    let result;
+
+    try {
+        result = await response.json();
+    } catch (error) {
+        showMessage("The server sent back an unexpected response.", "danger");
+        return;
+    }
+
+    if (response.ok === false || result.ok === false) {
+        applyServerErrors(result.errors || {});
+        showMessage("Could not create the portfolio. Please check the highlighted fields.", "danger");
+        return;
+    }
+
+    const id = result.portfolio.id;
+
+    portfolios[id] = result.portfolio;
+
+    renderPortfolioDropdowns();
+    selectPortfolio(id);
+
+    showMessage("Portfolio created successfully!", "success");
 }
 
 // Clear only the item inputs (keep the profile inputs)
@@ -471,11 +568,41 @@ viewSelect.addEventListener("change", function () {
     selectPortfolio(viewSelect.value);
 });
 
+// Create a new portfolio when the Create Portfolio button is clicked
+const createPortfolioBtn = document.getElementById("create-portfolio-btn");
+
+createPortfolioBtn.addEventListener("click", async function () {
+    createPortfolioBtn.disabled = true;
+
+    if (validateProfileForm() === false) {
+        showMessage("Please check the highlighted profile fields.", "danger");
+        createPortfolioBtn.disabled = false;
+        return;
+    }
+
+    const data = {
+        displayName: document.getElementById("profile-name").value.trim(),
+        whatIEnjoy: document.getElementById("what-i-enjoy").value.trim(),
+        whatIveTried: document.getElementById("what-ive-tried").value.trim(),
+        whatImCuriousAbout: document.getElementById("what-curious").value.trim()
+    };
+
+    await createPortfolio(data);
+
+    createPortfolioBtn.disabled = false;
+});
+
 form.addEventListener("submit", async function (event) {
     event.preventDefault();
 
     const submitBtn = form.querySelector('button[type="submit"]');
     submitBtn.disabled = true;
+
+    if (createSelect.value === "") {
+        showMessage("Please create or select a portfolio first.", "danger");
+        submitBtn.disabled = false;
+        return;
+    }
 
     if (validateForm() === false) {
         showMessage("Please check the highlighted fields. Nothing was saved.", "danger");
@@ -493,5 +620,6 @@ form.addEventListener("submit", async function (event) {
 (async function init() {
     toggleOtherType();
     await loadPortfolios();
-    selectPortfolio(createSelect.value);
+
+    selectPortfolio("");
 })();

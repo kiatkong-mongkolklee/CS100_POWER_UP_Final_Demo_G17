@@ -29,7 +29,7 @@ const PUBLIC_DIR = path.join(__dirname, "public");
 // browser can use to reach this file directly.
 const DATA_DIR = path.join(__dirname, "data");
 const DATA_FILE = path.join(DATA_DIR, "portfolios.json");
-const PORTFOLIO_IDS = ["portfolio_1", "portfolio_2"];
+
 
 function seedFromSampleFiles() {
     // First run on a fresh machine (e.g. a brand new EC2 instance): seed
@@ -102,14 +102,81 @@ app.get("/api/portfolios", (req, res) => {
     res.json({ ok: true, portfolios: portfolios });
 });
 
+// POST /api/portfolios
+// Creates a new portfolio profile.
+app.post("/api/portfolios", (req, res) => {
+    const data = req.body;
+
+    // Validate the profile fields
+    const errors = {};
+
+    if (!data.displayName || !data.displayName.trim()) {
+        errors.displayName = "Please enter a display name.";
+    }
+    if (!data.whatIEnjoy || !data.whatIEnjoy.trim()) {
+        errors.whatIEnjoy = "Please tell us what you enjoy.";
+    }
+    if (!data.whatIveTried || !data.whatIveTried.trim()) {
+        errors.whatIveTried = "Please tell us what you've tried.";
+    }
+    if (!data.whatImCuriousAbout || !data.whatImCuriousAbout.trim()) {
+        errors.whatImCuriousAbout = "Please tell us what you are curious about.";
+    }
+
+    if (Object.keys(errors).length > 0) {
+        return res.status(400).json({ ok: false, errors: errors });
+    }
+
+    const portfolios = loadPortfolios();
+
+    // Generate the next available portfolio ID
+    let number = 1;
+    while (portfolios["portfolio_" + number]) {
+        number++;
+    }
+
+    const id = "portfolio_" + number;
+
+    const newPortfolio = {
+        id: id,
+        displayName: data.displayName.trim(),
+        whatIEnjoy: data.whatIEnjoy.trim(),
+        whatIveTried: data.whatIveTried.trim(),
+        whatImCuriousAbout: data.whatImCuriousAbout.trim(),
+        items: []
+    };
+
+    portfolios[id] = newPortfolio;
+
+    try {
+        savePortfolios(portfolios);
+    } catch (error) {
+        console.error("Could not save portfolios.json:", error.message);
+        return res.status(500).json({
+            ok: false,
+            errors: { server: "Could not create the portfolio." }
+        });
+    }
+
+    res.status(201).json({
+        ok: true,
+        portfolio: newPortfolio
+    });
+});
+
 // POST /api/portfolios/:id/items
 // Saves the profile fields + adds one new portfolio item.
 // Body shape matches what public/js/app.js's readForm() produces.
 app.post("/api/portfolios/:id/items", (req, res) => {
     const id = req.params.id;
+    const portfolios = loadPortfolios();
+    const existing = portfolios[id];
 
-    if (PORTFOLIO_IDS.indexOf(id) === -1) {
-        return res.status(400).json({ ok: false, errors: { portfolio: "Unknown portfolio id." } });
+    if (!existing) {
+        return res.status(404).json({
+            ok: false,
+            errors: { portfolio: "Portfolio not found." }
+        });
     }
 
     // --- Server-side validation (defense in depth) ---
@@ -122,9 +189,7 @@ app.post("/api/portfolios/:id/items", (req, res) => {
     }
     const data = result.cleaned;
 
-    const portfolios = loadPortfolios();
-    const existing = portfolios[id];
-    const items = existing && Array.isArray(existing.items) ? existing.items : [];
+    const items = Array.isArray(existing.items) ? existing.items : [];
 
     const newItem = {
         id: "item" + String(items.length + 1).padStart(3, "0"),
