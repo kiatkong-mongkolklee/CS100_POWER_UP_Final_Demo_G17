@@ -296,3 +296,13 @@ body {
     font-family: monospace;
     resize: vertical;
 }
+
+.navbar a {
+    text-decoration: none;
+}
+
+.navbar {
+    padding-left: 1.5rem;
+    padding-right: 1.5rem;
+}
+
