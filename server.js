@@ -231,6 +231,100 @@ app.post("/api/portfolios/:id/items", (req, res) => {
     res.status(201).json({ ok: true, portfolio: portfolios[id] });
 });
 
+// POST /api/portfolios/:id/import
+// Imports an external portfolio item JSON (copied from another booth/challenge)
+app.post("/api/portfolios/:id/import", (req, res) => {
+    const id = req.params.id;
+    const portfolios = loadPortfolios();
+    const existing = portfolios[id];
+
+    if (!existing) {
+        return res.status(404).json({
+            ok: false,
+            error: "Portfolio not found."
+        });
+    }
+
+    const raw = req.body;
+    if (typeof raw !== "object" || raw === null || Array.isArray(raw)) {
+        return res.status(400).json({
+            ok: false,
+            error: "Invalid JSON format: expected an item object."
+        });
+    }
+
+    // ตรวจสอบฟิลด์หลักที่จำเป็นของ Portfolio Item
+    const requiredStrings = ["title", "type", "date", "role", "description"];
+    for (const field of requiredStrings) {
+        if (typeof raw[field] !== "string" || raw[field].trim() === "") {
+            return res.status(400).json({
+                ok: false,
+                error: `Missing or invalid required field: ${field}`
+            });
+        }
+    }
+
+    // จัดรูปแบบ skills ให้เป็น Array ของข้อความเสมอ
+    let skills = [];
+    if (Array.isArray(raw.skills)) {
+        skills = raw.skills.map(s => String(s).trim()).filter(Boolean);
+    } else if (typeof raw.skills === "string") {
+        skills = raw.skills.split(",").map(s => s.trim()).filter(Boolean);
+    }
+
+    // จัดรูปแบบ reflection (รองรับทั้งแบบ object ซ้อนด้านใน และแบบแยกฟิลด์)
+    const ref = (typeof raw.reflection === "object" && raw.reflection !== null) ? raw.reflection : raw;
+    const reflection = {
+        whatIDid: typeof ref.whatIDid === "string" && ref.whatIDid.trim() ? ref.whatIDid.trim() : "-",
+        whatILearned: typeof ref.whatILearned === "string" && ref.whatILearned.trim() ? ref.whatILearned.trim() : "-",
+        challenge: typeof ref.challenge === "string" && ref.challenge.trim() ? ref.challenge.trim() : "-",
+        nextStep: typeof ref.nextStep === "string" && ref.nextStep.trim() ? ref.nextStep.trim() : "-"
+    };
+
+    // จัดรูปแบบ evidence ให้เป็น Array ของลิงก์เสมอ
+    let evidence = [];
+    if (Array.isArray(raw.evidence)) {
+        evidence = raw.evidence.map(e => String(e).trim()).filter(Boolean);
+    } else if (typeof raw.evidence === "string") {
+        evidence = raw.evidence.split(",").map(e => e.trim()).filter(Boolean);
+    }
+
+    const items = Array.isArray(existing.items) ? existing.items : [];
+
+    const importedItem = {
+        id: "item" + String(items.length + 1).padStart(3, "0"),
+        title: raw.title.trim(),
+        type: raw.type.trim(),
+        date: raw.date.trim(),
+        role: raw.role.trim(),
+        description: raw.description.trim(),
+        skills: skills,
+        reflection: reflection,
+        evidence: evidence,
+        photos: Array.isArray(raw.photos) ? raw.photos : [],
+        files: Array.isArray(raw.files) ? raw.files : []
+    };
+
+    items.push(importedItem);
+    existing.items = items;
+    portfolios[id] = existing;
+
+    try {
+        savePortfolios(portfolios);
+    } catch (error) {
+        console.error("Could not save imported item:", error.message);
+        return res.status(500).json({
+            ok: false,
+            error: "Could not save imported item on the server."
+        });
+    }
+
+    res.status(201).json({
+        ok: true,
+        portfolio: portfolios[id]
+    });
+});
+
 app.listen(PORT, () => {
     console.log("Portfolio server running at http://localhost:" + PORT);
     console.log("Data file (hidden from the browser): " + DATA_FILE);
