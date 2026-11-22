@@ -46,6 +46,23 @@
       <p id="bubble">พร้อมเล่นเกมหรือยัง? 😊</p>
     </div>
 
+    <!-- ส่วน Export Challenge Item ตอนเล่นจบ -->
+    <div id="export-challenge-section" class="export-section hidden">
+      <h3>🎉 ยินดีด้วย! คุณผ่าน Challenge แล้ว!</h3>
+      <p>กดปุ่มด้านล่างเพื่อสร้างโค้ด Portfolio Item JSON ไปใส่ในเว็บของคุณ</p>
+
+      <button id="export-challenge-btn" type="button" class="btn-export">
+        สร้าง Portfolio Item JSON
+      </button>
+
+      <div id="json-result-box" class="json-result-box hidden">
+        <textarea id="challenge-item-json" class="json-textarea" rows="8" readonly></textarea>
+        <button id="copy-json-btn" type="button" class="btn-copy">
+          📋 Copy JSON
+        </button>
+      </div>
+    </div>
+
   </main>
 
   <!-- เชื่อม JavaScript -->

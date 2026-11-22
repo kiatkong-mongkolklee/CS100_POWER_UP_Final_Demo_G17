@@ -331,15 +331,15 @@
 
                                 <button type="button" id="create-portfolio-btn" class="btn btn-primary flex-grow-1">
                                     Create Portfolio
-                                    </button>
+                                </button>
 
-                                    <button type="submit" class="btn btn-success flex-grow-1">
-                                        Add Portfolio Item
-                                    </button>
+                                <button type="submit" class="btn btn-success flex-grow-1">
+                                    Add Portfolio Item
+                                </button>
 
-                                    <button type="reset" class="btn btn-outline-dark">
-                                        Clear
-                                    </button>
+                                <button type="reset" class="btn btn-outline-dark">
+                                    Clear
+                                </button>
 
                             </div>
 
@@ -363,6 +363,9 @@
 
                     <div class="d-flex justify-content-between align-items-center mb-4">
                         <h3 class="mb-0">View Portfolio</h3>
+                        <button id="export-portfolio-btn" type="button" class="btn btn-primary">
+                            Export My Portfolio (.json)
+                        </button>
                     </div>
 
                     <!-- Select Portfolio -->
@@ -446,19 +449,40 @@
 
         </section>
         <section id="challenge-section" class="my-5">
-            <h2 class="h4">Challenge Exchange</h2>
+            <div class="row justify-content-center">
+                <div class="col-lg-10">
+                    <div class="card shadow-sm">
+                        <div class="card-header bg-warning text-dark">
+                            <h4 class="card-title mb-0">📥 Import Portfolio Item จากเพื่อน</h4>
+                        </div>
+                        <div class="card-body">
+                            <div id="challenge-errors" class="alert alert-danger d-none" role="alert"></div>
 
-            <div id="challenge-errors" class="alert alert-danger d-none" role="alert"></div>
+                            <div class="mb-3">
+                                <label for="import-json-textarea" class="form-label fw-bold">
+                                    วางโค้ด JSON ที่ได้จากบูธเพื่อนลงในช่องนี้:
+                                </label>
+                                <textarea id="import-json-textarea" class="form-control" rows="5"
+                                    placeholder='{ "id": "item_123", "title": "..." }'></textarea>
+                            </div>
 
-            <div class="d-flex flex-wrap gap-2 mb-3">
-                <button id="export-challenge-btn" type="button" class="btn btn-primary">Export our challenge</button>
-                <div>
-                    <label for="challenge-file" class="visually-hidden">Import a challenge file</label>
-                    <input type="file" id="challenge-file" class="form-control" accept=".json,application/json">
+                            <div class="mb-3">
+                                <label for="import-portfolio-select" class="form-label fw-bold">
+                                    เลือก Portfolio ที่ต้องการนำเข้า:
+                                </label>
+                                <select id="import-portfolio-select" class="form-select">
+                                    <option value="portfolio_1">Portfolio 1</option>
+                                    <option value="portfolio_2">Portfolio 2</option>
+                                </select>
+                            </div>
+
+                            <button id="import-item-btn" type="button" class="btn btn-warning fw-bold">
+                                Import Item ลงเซิร์ฟเวอร์
+                            </button>
+                        </div>
+                    </div>
                 </div>
             </div>
-
-            <div id="challenge-view"></div>
         </section>
 
 
