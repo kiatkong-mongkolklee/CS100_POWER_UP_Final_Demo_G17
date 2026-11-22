@@ -2,17 +2,18 @@
   "schemaVersion": "1.0",
   "id": "G17-C01",
   "creatorGroup": "G17",
-  "title": "Verified Human Quiz",
-  "description": "แบบทดสอบสั้น ๆ 4 ข้อ เกี่ยวกับการส่งข้อมูลแบบ POST ว่า HTML Form กับ fetch() ต่างกันอย่างไร",
+  "title": "Verified Human Quiz + Drawing Game",
+  "description": "แบบทดสอบสั้น ๆ 4 ข้อ เกี่ยวกับการส่งข้อมูลแบบ POST ว่า HTML Form กับ fetch() ต่อด้วยมินิเกมวาดภาพทดสอบความจำ จากการสังเกตหน้าเว็บไซต์ในเวลาจำกัด",
   "category": "discover",
   "instructions": [
-    "เปิดเว็บ Learning Portfolio ของกลุ่ม G17 (ใช้ลิงก์ที่กลุ่ม G17 ให้) แล้วกดเมนู Challenge",
+    "เกมที่ 1 : เปิดเว็บ Learning Portfolio ของกลุ่ม G17 (ใช้ลิงก์ที่กลุ่ม G17 ให้) แล้วกดเมนู Challenge",
     "ตอบคำถามทั้ง 4 ข้อเกี่ยวกับการส่งข้อมูลแบบ POST ด้วย HTML Form และ fetch()",
     "ถ้าตอบผิดให้ลองใหม่จนถูก และอ่านคำอธิบายที่ขึ้นหลังตอบถูกในแต่ละข้อ",
     "ดูหน้าสรุปผลและจดไว้ว่าพลาดกี่ครั้ง กับข้อไหนที่เพิ่งรู้ใหม่"
+    "สังเกตและจดจำรายละเอียดของหน้าเว็บไซต์ภายในเวลา 5-10 วินาที จากนั้นถ่ายทอดสิ่งที่จำได้ลงบนกระดาษ"
   ],
   "estimatedMinutes": 5,
   "evidencePrompt": "คุณพลาดกี่ครั้ง HTML Form กับ fetch() ส่งข้อมูลแบบ POST ต่างกันอย่างไร และคุณเพิ่งรู้อะไรใหม่จากแบบทดสอบนี้",
   "evidence": ["https://github.com/kiatkong-mongkolklee/CS100_POWER_UP_Final_Demo_G17.git"],
-  "tags": ["POST", "fetch", "HTML Form", "quiz"]
+  "tags": ["POST", "fetch", "HTML Form", "quiz", "art"]
 }
