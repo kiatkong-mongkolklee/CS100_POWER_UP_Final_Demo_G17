@@ -162,7 +162,14 @@ function finish() {
 // ส่วนสร้าง Item JSON และปุ่ม Copy
 // ==========================================
 function generateItemJSON() {
+  // unique id per completed challenge, so each tester's item is different
+  const uniqueId = "item-g17-" + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
   const itemData = {
+    schemaVersion: "1.0",
+    id: uniqueId,
+    challengeId: "g17-challenge-1",
+    hostGroup: "G17",
+    category: "discover",
     title: "Verified Human Quiz Challenge",
     type: "Activity",
     date: new Date().toISOString().split('T')[0],
@@ -175,7 +182,7 @@ function generateItemJSON() {
       challenge: "ต้องวิเคราะห์การทำงานของเบราว์เซอร์ในแต่ละขั้นตอนให้แม่นยำ",
       nextStep: "นำความรู้เรื่อง fetch() ไปประยุกต์ใช้เชื่อมต่อ API ในโปรเจกต์จริง"
     },
-    evidence: ["https://example.com/verified-human-quiz"],
+    evidence: ["https://github.com/kiatkong-mongkolklee/CS100_POWER_UP_Final_Demo_G17"],
     photos: [],
     files: []
   };

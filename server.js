@@ -14,7 +14,7 @@
 const express = require("express");
 const path = require("path");
 const fs = require("fs");
-const { validatePortfolioItem } = require("./validation");
+const { validatePortfolioItem, validateImportedItem, isDuplicateImport } = require("./validation");
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -245,65 +245,49 @@ app.post("/api/portfolios/:id/import", (req, res) => {
         });
     }
 
-    const raw = req.body;
-    if (typeof raw !== "object" || raw === null || Array.isArray(raw)) {
+    // Re-validate everything on the server (same strictness as "create item"):
+    // required fields, YYYY-MM-DD date, skills, all 4 reflection fields,
+    // at least one valid evidence URL, and safe photo/file uploads.
+    const result = validateImportedItem(req.body);
+    if (result.valid === false) {
         return res.status(400).json({
             ok: false,
-            error: "Invalid JSON format: expected an item object."
+            error: result.errors.join(" "),
+            errors: result.errors
         });
     }
-
-    // ตรวจสอบฟิลด์หลักที่จำเป็นของ Portfolio Item
-    const requiredStrings = ["title", "type", "date", "role", "description"];
-    for (const field of requiredStrings) {
-        if (typeof raw[field] !== "string" || raw[field].trim() === "") {
-            return res.status(400).json({
-                ok: false,
-                error: `Missing or invalid required field: ${field}`
-            });
-        }
-    }
-
-    // จัดรูปแบบ skills ให้เป็น Array ของข้อความเสมอ
-    let skills = [];
-    if (Array.isArray(raw.skills)) {
-        skills = raw.skills.map(s => String(s).trim()).filter(Boolean);
-    } else if (typeof raw.skills === "string") {
-        skills = raw.skills.split(",").map(s => s.trim()).filter(Boolean);
-    }
-
-    // จัดรูปแบบ reflection (รองรับทั้งแบบ object ซ้อนด้านใน และแบบแยกฟิลด์)
-    const ref = (typeof raw.reflection === "object" && raw.reflection !== null) ? raw.reflection : raw;
-    const reflection = {
-        whatIDid: typeof ref.whatIDid === "string" && ref.whatIDid.trim() ? ref.whatIDid.trim() : "-",
-        whatILearned: typeof ref.whatILearned === "string" && ref.whatILearned.trim() ? ref.whatILearned.trim() : "-",
-        challenge: typeof ref.challenge === "string" && ref.challenge.trim() ? ref.challenge.trim() : "-",
-        nextStep: typeof ref.nextStep === "string" && ref.nextStep.trim() ? ref.nextStep.trim() : "-"
-    };
-
-    // จัดรูปแบบ evidence ให้เป็น Array ของลิงก์เสมอ
-    let evidence = [];
-    if (Array.isArray(raw.evidence)) {
-        evidence = raw.evidence.map(e => String(e).trim()).filter(Boolean);
-    } else if (typeof raw.evidence === "string") {
-        evidence = raw.evidence.split(",").map(e => e.trim()).filter(Boolean);
-    }
+    const data = result.cleaned;
 
     const items = Array.isArray(existing.items) ? existing.items : [];
 
+    // Importing the same item into the same portfolio twice is rejected.
+    if (isDuplicateImport(items, data)) {
+        return res.status(409).json({
+            ok: false,
+            error: "This item was already imported into this portfolio."
+        });
+    }
+
     const importedItem = {
         id: "item" + String(items.length + 1).padStart(3, "0"),
-        title: raw.title.trim(),
-        type: raw.type.trim(),
-        date: raw.date.trim(),
-        role: raw.role.trim(),
-        description: raw.description.trim(),
-        skills: skills,
-        reflection: reflection,
-        evidence: evidence,
-        photos: Array.isArray(raw.photos) ? raw.photos : [],
-        files: Array.isArray(raw.files) ? raw.files : []
+        title: data.title,
+        type: data.type,
+        date: data.date,
+        role: data.role,
+        description: data.description,
+        skills: data.skills,
+        reflection: data.reflection,
+        evidence: data.evidence,
+        photos: data.photos,
+        files: data.files
     };
+
+    // Keep the optional exchange fields so cross-group items stay traceable.
+    ["sourceId", "schemaVersion", "challengeId", "hostGroup", "category"].forEach(function (name) {
+        if (data[name] !== undefined) {
+            importedItem[name] = data[name];
+        }
+    });
 
     items.push(importedItem);
     existing.items = items;

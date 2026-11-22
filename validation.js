@@ -201,9 +201,137 @@ function validatePortfolioItem(body) {
     };
 }
 
+
+// Import validation (item pasted from another group's booth).
+// Same rules as "create item": required fields, real date, skills,
+// all 4 reflection fields, at least one valid evidence URL, safe uploads.
+// Keeps the recommended exchange fields (schemaVersion, challengeId,
+// hostGroup, category) and the source id so duplicates can be detected.
+// Returns { valid, errors: [message, ...], cleaned }
+function validateImportedItem(raw) {
+    if (typeof raw !== "object" || raw === null || Array.isArray(raw)) {
+        return { valid: false, errors: ["Invalid JSON format: expected a single item object."], cleaned: null };
+    }
+
+    const errors = [];
+
+    const title = str(raw.title);
+    const type = str(raw.type);
+    const date = str(raw.date);
+    const role = str(raw.role);
+    const description = str(raw.description);
+
+    const requiredFields = [["title", title], ["type", type], ["date", date], ["role", role], ["description", description]];
+    const missing = requiredFields.filter(function (f) { return f[1] === ""; }).map(function (f) { return f[0]; });
+    if (missing.length > 0) {
+        errors.push("Missing required field(s): " + missing.join(", ") + ".");
+    }
+
+    if (date !== "" && !isValidDate(date)) {
+        errors.push("Invalid date. Please use the format YYYY-MM-DD.");
+    }
+
+    const skills = toList(raw.skills);
+    if (skills.length === 0) {
+        errors.push("Please include at least one skill.");
+    }
+
+    // reflection must be an object with all 4 fields (flat fields are still accepted)
+    let ref = raw;
+    let reflectionOk = true;
+    if (raw.reflection !== undefined) {
+        if (typeof raw.reflection !== "object" || raw.reflection === null || Array.isArray(raw.reflection)) {
+            errors.push("reflection must be an object with whatIDid, whatILearned, challenge and nextStep.");
+            reflectionOk = false;
+            ref = {};
+        } else {
+            ref = raw.reflection;
+        }
+    }
+    const reflection = {
+        whatIDid: str(ref.whatIDid),
+        whatILearned: str(ref.whatILearned),
+        challenge: str(ref.challenge),
+        nextStep: str(ref.nextStep)
+    };
+    if (reflectionOk) {
+        const emptyReflection = Object.keys(reflection).filter(function (k) { return reflection[k] === ""; });
+        if (emptyReflection.length > 0) {
+            errors.push("Please fill in your Reflection before importing. Empty: " + emptyReflection.join(", ") + ".");
+        }
+    }
+
+    const evidence = toList(raw.evidence);
+    if (evidence.length === 0) {
+        errors.push("Please include at least one evidence link (URL).");
+    } else {
+        for (let i = 0; i < evidence.length; i++) {
+            if (!isValidUrl(evidence[i])) {
+                errors.push('Evidence "' + evidence[i] + '" is not a valid link (must start with http:// or https://).');
+                break;
+            }
+        }
+    }
+
+    const uploadErrors = {};
+    const photos = validateFileList(raw.photos, "photos", uploadErrors);
+    const files = validateFileList(raw.files, "files", uploadErrors);
+    Object.keys(uploadErrors).forEach(function (k) { errors.push(uploadErrors[k]); });
+
+    if (errors.length > 0) {
+        return { valid: false, errors: errors, cleaned: null };
+    }
+
+    const cleaned = {
+        title: title,
+        type: type,
+        date: date,
+        role: role,
+        description: description,
+        skills: skills,
+        reflection: reflection,
+        evidence: evidence,
+        photos: photos,
+        files: files
+    };
+
+    // Optional exchange fields: keep them when they are text.
+    const sourceId = str(raw.id);
+    if (sourceId !== "") { cleaned.sourceId = sourceId; }
+    ["schemaVersion", "challengeId", "hostGroup", "category"].forEach(function (name) {
+        const value = str(raw[name]);
+        if (value !== "") { cleaned[name] = value; }
+    });
+
+    return { valid: true, errors: [], cleaned: cleaned };
+}
+
+// Key used to detect "the same item imported twice into the same portfolio".
+//  - item came with an id: same id + same host group + same challenge + same title
+//  - no id: same title, type, date, role and description
+function importKey(item) {
+    const norm = function (v) { return String(v === undefined || v === null ? "" : v).trim().toLowerCase(); };
+    if (item.sourceId) {
+        return "id:" + [item.sourceId, item.hostGroup, item.challengeId, item.title].map(norm).join("|");
+    }
+    return "fp:" + [item.title, item.type, item.date, item.role, item.description].map(norm).join("|");
+}
+
+function isDuplicateImport(existingItems, cleaned) {
+    const key = importKey(cleaned);
+    for (let i = 0; i < existingItems.length; i++) {
+        if (importKey(existingItems[i]) === key) {
+            return true;
+        }
+    }
+    return false;
+}
+
 module.exports = {
     toList: toList,
     isValidUrl: isValidUrl,
     isValidDate: isValidDate,
-    validatePortfolioItem: validatePortfolioItem
+    validatePortfolioItem: validatePortfolioItem,
+    validateImportedItem: validateImportedItem,
+    isDuplicateImport: isDuplicateImport
 };
