@@ -14,7 +14,7 @@
 const express = require("express");
 const path = require("path");
 const fs = require("fs");
-const { validatePortfolioItem, validateImportedItem, isDuplicateImport } = require("./validation");
+const { validatePortfolioItem, validateImportedItem, isDuplicateImport, isDuplicatePortfolioName } = require("./validation");
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -128,6 +128,16 @@ app.post("/api/portfolios", (req, res) => {
     }
 
     const portfolios = loadPortfolios();
+
+    // Check for duplicate portfolio name
+    if (isDuplicatePortfolioName(portfolios, data.displayName)) {
+        return res.status(400).json({
+            ok: false,
+            errors: {
+                displayName: "A portfolio with this name already exists."
+            }
+        });
+    }
 
     // Generate the next available portfolio ID
     let number = 1;

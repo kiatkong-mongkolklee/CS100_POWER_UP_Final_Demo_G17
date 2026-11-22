@@ -170,6 +170,19 @@ function validateProfileForm() {
         }
     }
 
+    // Check for duplicate portfolio name
+    const displayName = document.getElementById("profile-name").value.trim().toLowerCase();
+
+    const duplicateName = Object.values(portfolios).some(function (portfolio) {
+        return portfolio.displayName.trim().toLowerCase() === displayName;
+    });
+
+    if (duplicateName) {
+        const input = document.getElementById("profile-name");
+        setError(input, "A portfolio with this name already exists.");
+        ok = false;
+    }
+
     const firstError = form.querySelector(".is-invalid");
 
     if (firstError !== null) {

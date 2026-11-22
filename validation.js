@@ -63,6 +63,15 @@ function str(value) {
     return typeof value === "string" ? value.trim() : "";
 }
 
+// Check whether a portfolio name already exists.
+function isDuplicatePortfolioName(portfolios, displayName) {
+    const name = str(displayName).toLowerCase();
+
+    return Object.values(portfolios).some(function (portfolio) {
+        return str(portfolio.displayName).toLowerCase() === name;
+    });
+}
+
 const MAX_FILE_BYTES = 5 * 1024 * 1024; // 5MB per photo/file (decoded size)
 const MAX_FILES_PER_FIELD = 10;
 
@@ -333,5 +342,6 @@ module.exports = {
     isValidDate: isValidDate,
     validatePortfolioItem: validatePortfolioItem,
     validateImportedItem: validateImportedItem,
-    isDuplicateImport: isDuplicateImport
+    isDuplicateImport: isDuplicateImport,
+    isDuplicatePortfolioName: isDuplicatePortfolioName
 };
