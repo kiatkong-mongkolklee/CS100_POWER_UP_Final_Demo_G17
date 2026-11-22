@@ -302,10 +302,15 @@ function applyServerErrors(errors) {
 // data lives in the hidden JSON file the server writes to, not here.
 let portfolios = {};
 
-// Generate options for both portfolio dropdowns
+// Generate options for portfolio dropdowns
 function renderPortfolioDropdowns() {
+    const importSelect = document.getElementById("import-portfolio-select");
+
     createSelect.innerHTML = '<option value="" disabled selected>Select Portfolio</option>';
     viewSelect.innerHTML = '<option value="" disabled selected>Select Portfolio</option>';
+    if (importSelect) {
+        importSelect.innerHTML = '<option value="" disabled selected>Select Portfolio</option>';
+    }
 
     Object.keys(portfolios).forEach(id => {
         const portfolio = portfolios[id];
@@ -320,6 +325,13 @@ function renderPortfolioDropdowns() {
 
         createSelect.appendChild(option1);
         viewSelect.appendChild(option2);
+
+        if (importSelect) {
+            const option3 = document.createElement("option");
+            option3.value = id;
+            option3.textContent = portfolio.displayName;
+            importSelect.appendChild(option3);
+        }
     });
 }
 
@@ -623,3 +635,102 @@ form.addEventListener("submit", async function (event) {
 
     selectPortfolio("");
 })();
+
+// ==========================================
+// Export My Portfolio (.json)
+// ==========================================
+const exportPortfolioBtn = document.getElementById("export-portfolio-btn");
+if (exportPortfolioBtn) {
+    exportPortfolioBtn.addEventListener("click", function () {
+        const id = viewSelect.value;
+        const p = portfolios[id];
+
+        if (!id || !p) {
+            showMessage("Please select a portfolio in 'View Portfolio' first before exporting.", "danger");
+            return;
+        }
+
+        const jsonText = JSON.stringify(p, null, 2);
+        const blob = new Blob([jsonText], { type: "application/json" });
+        const url = URL.createObjectURL(blob);
+
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = "my-portfolio.json";
+        a.click();
+        URL.revokeObjectURL(url);
+
+        showMessage("Exported " + p.displayName + " (my-portfolio.json) successfully!", "success");
+    });
+}
+
+// ==========================================
+// Import Portfolio Item from JSON (Paste)
+// ==========================================
+const importItemBtn = document.getElementById("import-item-btn");
+if (importItemBtn) {
+    importItemBtn.addEventListener("click", async function () {
+        const textarea = document.getElementById("import-json-textarea");
+        const importSelect = document.getElementById("import-portfolio-select");
+        const rawText = textarea.value.trim();
+        const portfolioId = importSelect.value;
+
+        if (!portfolioId) {
+            showMessage("Please select a target portfolio to import into.", "danger");
+            return;
+        }
+
+        if (!rawText) {
+            showMessage("Please paste the Item JSON code first.", "danger");
+            return;
+        }
+
+        // 1. ตรวจสอบว่าเป็นรูปแบบ JSON ที่ถูกต้องไหม
+        let parsedItem;
+        try {
+            parsedItem = JSON.parse(rawText);
+        } catch (err) {
+            showMessage("Invalid JSON format. Please check the pasted code and try again.", "danger");
+            return;
+        }
+
+        // 2. ตรวจสอบ Fields พื้นฐานเบื้องต้น
+        if (typeof parsedItem !== "object" || parsedItem === null || Array.isArray(parsedItem)) {
+            showMessage("JSON must be a single item object.", "danger");
+            return;
+        }
+
+        if (!parsedItem.title || !parsedItem.type || !parsedItem.date || !parsedItem.role || !parsedItem.description) {
+            showMessage("Missing required fields (title, type, date, role, or description).", "danger");
+            return;
+        }
+
+        // 3. ส่งข้อมูลไปให้ Backend บันทึกลงไฟล์
+        importItemBtn.disabled = true;
+        try {
+            const response = await fetch("/api/portfolios/" + encodeURIComponent(portfolioId) + "/import", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(parsedItem)
+            });
+
+            const result = await response.json();
+
+            if (!response.ok || result.ok === false) {
+                showMessage(result.error || "Server rejected the imported item.", "danger");
+                importItemBtn.disabled = false;
+                return;
+            }
+
+            // อัปเดตข้อมูลหน้าเว็บและแสดงผลทันที
+            portfolios[portfolioId] = result.portfolio;
+            textarea.value = "";
+            selectPortfolio(portfolioId);
+            showMessage("Imported item into portfolio successfully!", "success");
+
+        } catch (error) {
+            showMessage("Could not reach the server to import item.", "danger");
+        }
+        importItemBtn.disabled = false;
+    });
+}
