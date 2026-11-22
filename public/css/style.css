@@ -116,14 +116,14 @@ h1, h2, h3, h4, h5, h6 {
     letter-spacing: 0.3px;
 }
 
-h5.b-0 {
-    color: #f5f5f5ffff;
-}
-
-
-/* Highlight Text */
+/* Highlight Text*/
 .text-orange {
     color: #FF7849;
+}
+
+.card-header {
+  background-color: #292B32 !important;
+  color: #FF7849 !important;
 }
 
 /* Navbar */
