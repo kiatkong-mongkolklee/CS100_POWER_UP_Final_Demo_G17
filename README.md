@@ -4,6 +4,18 @@
 
 ---
 
+## Team Members
+* ภัทรชนน สุวรรณเลิศเจริญ 6909617497 (รับผิดชอบ : Dynamic Dropdown Portfolio / API Endpoint สำหรับสร้าง Portfolio)
+* ณวัฒน์ ทุมพร 6909617422 (รับผิดชอบ : Challenge Creator & Event Coordinator / โครงสร้างข้อมูล challenge.json)
+* ณัฐวัฒน์ เกียรติขจรสกุล 6909546043 (รับผิดชอบ : ระบบ Import/Export JSON, หน้า Challenge, API Route)
+* เกียรติก้อง มงคลคลี 6909617364 (รับผิดชอบ : Project Manager / Frontend)
+* ณัฐณิชา มะวังนุธูร 6909617430 (รับผิดชอบ : Frontend Challenge)
+* ต้นดิน พูลสวัสดิ์ 6909546050 (รับผิดชอบ : Backend / Readme.md)
+* ธราเทพ เอื้อตระกูล 6909546068 (รับผิดชอบ : ระบบ Export/Import ไฟล์ challenge.json)
+* จิตติพัฒน์ ภูโคตรศรี 6909546027 (รับผิดชอบ : Cloud, AWS EC2)
+
+---
+
 ## 1. Main Features
 
 **Portfolio**
@@ -192,7 +204,30 @@ POST /api/portfolios
 
 ---
 
-## 10. Portfolio Item JSON (สำหรับ Import)
+## 10. Data Structures (Export & Import)
+
+10.1 Exported Portfolio JSON (my-portfolio.json)
+เมื่อผู้ใช้กด Export Portfolio ระบบจะดาวน์โหลดไฟล์ JSON ซึ่งรวมข้อมูลโปรไฟล์และ Items ทั้งหมดในรูปแบบนี้:
+
+```json
+{
+  "id": "portfolio_1",
+  "displayName": "Adam Smith",
+  "whatIEnjoy": "Coding",
+  "whatIveTried": "CS100",
+  "whatImCuriousAbout": "JavaScript",
+  "items": [
+    {
+      "id": "item-001",
+      "title": "My First Project",
+      ...
+    }
+  ]
+}
+```
+
+10.2 Portfolio Item JSON (สำหรับ Import ข้ามกลุ่มได้)
+โครงสร้างของ Item 1 ชิ้น ที่ได้จากการเล่น Challenge บูธ G17 (หรือบูธอื่น) เพื่อนำมาวางในกล่อง Import:
 
 ```json
 {
@@ -256,7 +291,7 @@ POST /api/portfolios
 2. Clone โปรเจกต์ลงเครื่อง แล้วรัน `npm install`
 3. รัน `npm start` (แนะนำใช้ `pm2` หรือ `systemd` ให้ Server รันค้างไว้และกลับมาทำงานเองหลัง reboot)
 4. เปิด port ที่ใช้ (ค่าเริ่มต้น `3000`) ใน Security Group
-5. เข้าเว็บที่ `http://3.107.94.198:3000 `
+5. เข้าเว็บที่ http://3.107.94.198:3000
 
 ---
 
