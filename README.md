@@ -256,7 +256,7 @@ POST /api/portfolios
 2. Clone โปรเจกต์ลงเครื่อง แล้วรัน `npm install`
 3. รัน `npm start` (แนะนำใช้ `pm2` หรือ `systemd` ให้ Server รันค้างไว้และกลับมาทำงานเองหลัง reboot)
 4. เปิด port ที่ใช้ (ค่าเริ่มต้น `3000`) ใน Security Group
-5. เข้าเว็บที่ `http://<EC2-Public-IP>:3000`
+5. เข้าเว็บที่ `http://3.107.94.198:3000 `
 
 ---
 
